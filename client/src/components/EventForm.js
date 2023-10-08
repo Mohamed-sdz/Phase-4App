@@ -1,83 +1,70 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
-function EventForm() {
-  // State to hold the form data
-  const [formData, setFormData] = useState({
-    title: '',
-    date: '',
-    location: '',
-    description: '',
-    // Add more fields as needed
+function InvitationForm({ eventId, onInvitationSent }) {
+  const initialValues = {
+    userEmail: '',
+  };
+
+  const validationSchema = Yup.object({
+    userEmail: Yup.string()
+      .email('Invalid email address')
+      .required('Email is required'),
   });
 
-  // Function to handle form input changes
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+  const onSubmit = async (values, { resetForm }) => {
+    try {
+      const response = await fetch('/api/invitations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          eventId,
+          userEmail: values.userEmail,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send invitation');
+      }
+
+      onInvitationSent(); // Trigger a callback to handle the success action
+      resetForm();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  // Function to handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // You can add code here to save the event data to your database or perform other actions
-    console.log('Form submitted with data:', formData);
-  };
+  const formik = useFormik({
+    initialValues,
+    validationSchema,
+    onSubmit,
+  });
 
   return (
     <div>
-      <h2>Create Event</h2>
-      <form onSubmit={handleSubmit}>
+      <h2>Invite Guests</h2>
+      <form onSubmit={formik.handleSubmit}>
         <div>
-          <label htmlFor="title">Event Title:</label>
+          <label htmlFor="userEmail">Guest Email:</label>
           <input
             type="text"
-            id="title"
-            name="title"
-            value={formData.title}
-            onChange={handleInputChange}
-            required
+            id="userEmail"
+            name="userEmail"
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values.userEmail}
           />
+          {formik.touched.userEmail && formik.errors.userEmail ? (
+            <div>{formik.errors.userEmail}</div>
+          ) : null}
         </div>
-        <div>
-          <label htmlFor="date">Event Date:</label>
-          <input
-            type="date"
-            id="date"
-            name="date"
-            value={formData.date}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="location">Location:</label>
-          <input
-            type="text"
-            id="location"
-            name="location"
-            value={formData.location}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="description">Event Description:</label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-        {/* Add more input fields for other event information */}
-        <button type="submit">Save Event</button>
+        <button type="submit">Send Invitation</button>
       </form>
     </div>
   );
 }
 
-export default EventForm;
+export default InvitationForm;
