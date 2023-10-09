@@ -7,7 +7,7 @@ from app import bcrypt
 from app import db
 db = SQLAlchemy()
 
-# Define the junction table for the many-to-many relationship between User and Event
+# Define  table for the many-to-many relationship between User and Event
 user_event_association = db.Table(
     'user_event_association',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
@@ -21,7 +21,7 @@ class User(db.Model, SerializerMixin):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     _password_hash = db.Column(db.String(128), nullable=False)
-    admin = db.Column(db.Boolean, default=False)  # Updated to Boolean for admin role
+    admin = db.Column(db.Boolean, default=False)   
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
 
@@ -44,7 +44,7 @@ class User(db.Model, SerializerMixin):
 
     @validates('email')
     def validate_email(self, key, email):
-        # Add custom email validation logic (e.g., check for valid format)
+        # custom email validation logic 
         if '@' not in email:
             raise ValueError("Invalid email format")
         return email
@@ -69,7 +69,7 @@ class Event(db.Model, SerializerMixin):
 
     @validates('title')
     def validate_title(self, key, title):
-        # Add custom title validation logic (e.g., ensure title is not too long)
+        # Add custom title validation logic  
         if len(title) > 255:
             raise ValueError("Title is too long")
         return title
@@ -91,7 +91,7 @@ class Invitation(db.Model, SerializerMixin):
 
     @validates('status')
     def validate_status(self, key, status):
-        # Add custom status validation logic (e.g., allow only 'pending' or 'accepted')
+        # Add custom status validation logic ( allow only 'pending' or 'accepted')
         if status not in ('pending', 'accepted'):
             raise ValueError("Invalid status")
         return status
