@@ -48,7 +48,7 @@ python app.py
 ## How to Use
 
 1. With both the React frontend and Flask backend running, access the Event App in your web browser.
-2. Visit `http://localhost:3000` to interact with the React frontend.
+2. Visit `http://localhost:4000` to interact with the React frontend.
 3. The React frontend communicates with the Flask backend running at `http://localhost:5555`.
 4. Customize the React components and routes for your specific project requirements.
 5. Implement authentication and authorization as needed for your app.
