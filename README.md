@@ -2,6 +2,10 @@
 
 The Event App is a web application that allows users to create and manage events, send invitations to guests, and track RSVPs. It consists of a React frontend and a Flask backend.
 
+## VIDEO DEMO
+
+<https://app.clipchamp.com/editor/fdb1a133-f4b8-4c3a-91af-c596f116d7ce>
+
 ## Installation
 
 ### Prerequisites
