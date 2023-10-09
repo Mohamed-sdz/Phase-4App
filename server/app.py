@@ -1,7 +1,7 @@
-import os
-from dotenv import load_dotenv
-load_dotenv()  
 
+import os
+from models import Guest, Invitation, Event, User
+ 
 from flask import Flask, request, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -26,31 +26,7 @@ bcrypt = Bcrypt(app)
 db = SQLAlchemy(app)
 api = Api(app)
 
-# Define your User model
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), nullable=False)
-    email = db.Column(db.String(100), nullable=False)
-
-# Define your Event model
-class Event(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    date = db.Column(db.Date, nullable=False)
-
-# Define your Invitation model
-class Invitation(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    event_id = db.Column(db.Integer, db.ForeignKey('event.id'), nullable=False)
-    guest_id = db.Column(db.Integer, db.ForeignKey('guest.id'), nullable=False)
-    status = db.Column(db.String(20), nullable=False)
-
-# Define your Guest model
-class Guest(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(100), nullable=False)
-
+# Define your User model 
 @app.route('/')
 @app.route('/<int:id>')
 def index(id=0):
