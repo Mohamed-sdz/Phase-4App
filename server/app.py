@@ -1,7 +1,5 @@
 
 import os
-from models import Guest, Invitation, Event, User
- 
 from flask import Flask, request, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -9,7 +7,7 @@ from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_restful import Api, Resource
 from flask import Flask, request, make_response, session, jsonify, abort, render_template
-
+from models import Guest, Invitation, Event, User
 app = Flask(
     __name__,
     static_url_path='',
@@ -302,6 +300,5 @@ api.add_resource(InvitationResource, '/invitations', '/invitations/<int:invitati
 api.add_resource(GuestResource, '/guests', '/guests/<int:guest_id>')
 
 if __name__ == '__main__':
-    app.run(debug=True)
-    app.run(port=5555, debug=True)
+     app.run(port=5555, debug=True)
 
