@@ -6,10 +6,10 @@ function GuestList() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Fetch the list of guests from your API endpoint
+    // Fetch the list of guests from API endpoint
     const fetchGuests = async () => {
       try {
-        const response = await fetch('/api/guests'); // Replace with your actual API endpoint
+        const response = await fetch('/api/guests');  
         if (!response.ok) {
           throw new Error('Failed to fetch guest data');
         }

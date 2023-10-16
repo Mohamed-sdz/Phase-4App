@@ -39,8 +39,8 @@ function Home() {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    // Fetch events data from your API here
-    fetch('/api/events') // Replace with your API endpoint
+    // Fetch events data from API here
+    fetch('/api/events')  
       .then((response) => response.json())
       .then((data) => setEvents(data))
       .catch((error) => console.error('Error fetching events:', error));

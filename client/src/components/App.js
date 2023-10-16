@@ -17,7 +17,7 @@ function App() {
     const checkAuthentication = async () => {
       try {
         const response = await fetch('/api/check-auth', {
-          method: 'GET', // Adjust the method based on your authentication check
+          method: 'GET',
           credentials: 'include',
         });
 

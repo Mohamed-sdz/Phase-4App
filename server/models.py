@@ -2,9 +2,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
-from app import bcrypt
-
-from app import db
+import bcrypt
+ 
 db = SQLAlchemy()
 
 # Define  table for the many-to-many relationship between User and Event

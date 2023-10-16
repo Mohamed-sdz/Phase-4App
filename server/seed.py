@@ -2,21 +2,28 @@ from faker import Faker
 from app import db, User, Event, Invitation, Guest
 import random
 from datetime import datetime, timedelta
+import bcrypt
+import secrets
 
 fake = Faker()
+
+def generate_secure_password():
+    # Generate a secure random password with at least 12 characters
+    password = secrets.token_urlsafe(16)
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
 def seed_users(num_users):
     for _ in range(num_users):
         user = User(
             username=fake.user_name(),
             email=fake.email(),
-            password_hash=fake.password(),
+            password_hash=generate_secure_password(),
             admin=random.choice([True, False])
         )
         db.session.add(user)
     db.session.commit()
 
-def seed_events(num_events):
+def seed_events(num_events, num_users):
     for _ in range(num_events):
         event = Event(
             title=fake.catch_phrase(),
@@ -28,7 +35,7 @@ def seed_events(num_events):
         db.session.add(event)
     db.session.commit()
 
-def seed_invitations(num_invitations):
+def seed_invitations(num_invitations, num_events, num_users):
     for _ in range(num_invitations):
         invitation = Invitation(
             event_id=random.randint(1, num_events),
@@ -38,7 +45,7 @@ def seed_invitations(num_invitations):
         db.session.add(invitation)
     db.session.commit()
 
-def seed_guests(num_guests):
+def seed_guests(num_guests, num_invitations, num_users):
     for _ in range(num_guests):
         guest = Guest(
             invitation_id=random.randint(1, num_invitations),
@@ -56,6 +63,6 @@ if __name__ == '__main__':
 
     # Call the seeding functions with the desired number of entries
     seed_users(num_users)
-    seed_events(num_events)
-    seed_invitations(num_invitations)
-    seed_guests(num_guests)
+    seed_events(num_events, num_users)
+    seed_invitations(num_invitations, num_events, num_users)
+    seed_guests(num_guests, num_invitations, num_users)

@@ -68,7 +68,7 @@ function RegistrationForm() {
     setIsLoading(true); // Show loading indicator
 
     try {
-      // Send a POST request to your API endpoint to register the user
+      // Send a POST request to API endpoint to register the user
       const response = await fetch('/api/user', {
         method: 'POST',
         headers: {

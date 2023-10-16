@@ -1,13 +1,19 @@
 
+ 
+
 import os
-from flask import Flask, request, render_template
+from dotenv import load_dotenv
+from flask import Flask, request, render_template, flash, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_restful import Api, Resource
-from flask import Flask, request, make_response, session, jsonify, abort, render_template
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from models import Guest, Invitation, Event, User
+
+load_dotenv()  # Load environment variables from .env file
+
 app = Flask(
     __name__,
     static_url_path='',
@@ -15,24 +21,81 @@ app = Flask(
     template_folder='../client/build'
 )
 
+app.config['SECRET_KEY'] = 'your_secret_key'   
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.secret_key = os.environ.get('SESSION_KEY')
 
 CORS(app)
-bcrypt = Bcrypt(app)
 db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+migrate = Migrate(app, db)
 api = Api(app)
 
-# Define your User model 
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+ 
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+# Authentication routes
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+        if user and bcrypt.check_password_hash(user.password, password):
+            login_user(user)
+            flash('Login successful', 'success')
+            return redirect(url_for('index'))
+        else:
+            flash('Login failed. Please check your credentials.', 'danger')
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out', 'info')
+    return redirect(url_for('login'))
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+        user = User(username=username, email=email, password=hashed_password)
+        db.session.add(user)
+        db.session.commit()
+        flash('Account created successfully! You can now log in.', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('register.html')
+
 @app.route('/')
 @app.route('/<int:id>')
 def index(id=0):
     return render_template("index.html")
 
-# Resource handlers
+# API Resource Handlers
+
 class UserResource(Resource):
     def get(self, user_id):
+        # Get a specific user by ID
         user = User.query.get(user_id)
         if user:
             return {
@@ -44,6 +107,7 @@ class UserResource(Resource):
             return {'message': 'User not found'}, 404
 
     def post(self):
+        # Create a new user
         data = request.get_json()
         username = data.get('username')
         email = data.get('email')
@@ -62,6 +126,7 @@ class UserResource(Resource):
         }, 201
 
     def put(self, user_id):
+        # Update an existing user
         user = User.query.get(user_id)
 
         if not user:
@@ -85,6 +150,7 @@ class UserResource(Resource):
         }
 
     def delete(self, user_id):
+        # Delete a user by ID
         user = User.query.get(user_id)
 
         if not user:
@@ -97,6 +163,7 @@ class UserResource(Resource):
 
 class EventResource(Resource):
     def get(self, event_id):
+        # Get a specific event by ID
         event = Event.query.get(event_id)
         if event:
             return {
@@ -108,6 +175,7 @@ class EventResource(Resource):
             return {'message': 'Event not found'}, 404
 
     def post(self):
+        # Create a new event
         data = request.get_json()
         name = data.get('name')
         date = data.get('date')
@@ -126,6 +194,7 @@ class EventResource(Resource):
         }, 201
 
     def put(self, event_id):
+        # Update an existing event
         event = Event.query.get(event_id)
 
         if not event:
@@ -149,6 +218,7 @@ class EventResource(Resource):
         }
 
     def delete(self, event_id):
+        # Delete an event by ID
         event = Event.query.get(event_id)
 
         if not event:
@@ -161,6 +231,7 @@ class EventResource(Resource):
 
 class InvitationResource(Resource):
     def get(self, invitation_id):
+        # Get a specific invitation by ID
         invitation = Invitation.query.get(invitation_id)
         if invitation:
             return {
@@ -173,6 +244,7 @@ class InvitationResource(Resource):
             return {'message': 'Invitation not found'}, 404
 
     def post(self):
+        # Create a new invitation
         data = request.get_json()
         event_id = data.get('event_id')
         guest_id = data.get('guest_id')
@@ -193,6 +265,7 @@ class InvitationResource(Resource):
         }, 201
 
     def put(self, invitation_id):
+        # Update an existing invitation
         invitation = Invitation.query.get(invitation_id)
 
         if not invitation:
@@ -220,6 +293,7 @@ class InvitationResource(Resource):
         }
 
     def delete(self, invitation_id):
+        # Delete an invitation by ID
         invitation = Invitation.query.get(invitation_id)
 
         if not invitation:
@@ -232,6 +306,7 @@ class InvitationResource(Resource):
 
 class GuestResource(Resource):
     def get(self, guest_id):
+        # Get a specific guest by ID
         guest = Guest.query.get(guest_id)
         if guest:
             return {
@@ -243,6 +318,7 @@ class GuestResource(Resource):
             return {'message': 'Guest not found'}, 404
 
     def post(self):
+        # Create a new guest
         data = request.get_json()
         name = data.get('name')
         email = data.get('email')
@@ -261,6 +337,7 @@ class GuestResource(Resource):
         }, 201
 
     def put(self, guest_id):
+        # Update an existing guest
         guest = Guest.query.get(guest_id)
 
         if not guest:
@@ -284,6 +361,7 @@ class GuestResource(Resource):
         }
 
     def delete(self, guest_id):
+        # Delete a guest by ID
         guest = Guest.query.get(guest_id)
 
         if not guest:
@@ -294,11 +372,10 @@ class GuestResource(Resource):
 
         return {'message': 'Guest deleted'}, 204
 
-api.add_resource(UserResource, '/users', '/users/<int:user_id>')
-api.add_resource(EventResource, '/events', '/events/<int:event_id>')
-api.add_resource(InvitationResource, '/invitations', '/invitations/<int:invitation_id>')
-api.add_resource(GuestResource, '/guests', '/guests/<int:guest_id>')
+api.add_resource(UserResource, '/api/users', '/api/users/<int:user_id>')
+api.add_resource(EventResource, '/api/events', '/api/events/<int:event_id>')
+api.add_resource(InvitationResource, '/api/invitations', '/api/invitations/<int:invitation_id>')
+api.add_resource(GuestResource, '/api/guests', '/api/guests/<int:guest_id>')
 
 if __name__ == '__main__':
-     app.run(port=5555, debug=True)
-
+    app.run(port=5555, debug=True)
